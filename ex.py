@@ -15,6 +15,7 @@ def text_to_speech(text, lang='en'):
             if os.path.exists("speech.mp3"):
                 pygame.mixer.music.unload()  # Ensure the file is not in use
                 os.remove("speech.mp3")
+                print(f"Removed existing speech.mp3")
     except PermissionError as e:
             print(f"Error: {e}")
 
@@ -54,6 +55,9 @@ class AACDevice:
         self.root.title("AAC Device")
         self.image_path = "icons\images"  # Base path for images
         self.create_buttons()
+        self.clear_textbox_button()
+        self.read_textbox_button()
+       
         
           # Create a PanedWindow
         self.paned_window = tk.PanedWindow(self.root, orient=tk.HORIZONTAL)
@@ -77,7 +81,16 @@ class AACDevice:
          self.textbox.insert(tk.END, text + " ")
         
 
-   
+    def handle_read_button_click(self):
+        # Read the text from the textbox
+        text = self.textbox.get(1.0, tk.END).strip()
+        if text:
+            text_to_speech(text)
+        else:
+            print("Textbox is empty. Please enter some text.")
+        
+        # Optionally, you can play the audio file directly using an external player
+        # Uncomment the line below if you want to use an external player like mpg321
      
        # os.system("mpg321 speech.mp3" if os.name != "nt" else "start speech.mp3")
 
@@ -85,6 +98,23 @@ class AACDevice:
         self.append_text(text)
         text_to_speech(text)
  
+
+    def clear_textbox_button(self):
+        # Create a button to clear the textbox
+        clearbutton = tk.Button(self.root, text="Clear", command=lambda: self.handle_clear_button_click(), height=2, width=10)
+        clearbutton.grid(row=3, column=2, padx=5, pady=5)
+
+    def handle_clear_button_click(self):
+       #clear the textbox
+        self.textbox.delete(1.0, tk.END)
+
+    #create a button to read from the textbox
+    def read_textbox_button(self):
+        read_button = tk.Button(self.root, text="Read", command=lambda: self.handle_read_button_click(), height=2, width=10)
+        read_button.grid(row=3, column=3, padx=5, pady=5)
+
+
+   
     def create_buttons(self):
         for row_idx, row in enumerate(buttons_data):
             for col_idx, (phrase, image_file) in enumerate(row):
@@ -101,8 +131,16 @@ class AACDevice:
                 button.grid(row=row_idx, column=col_idx, padx=5, pady=5)
     
 
-
 if __name__ == "__main__":
-    root = tk.Tk()
-    app = AACDevice(root)
-    root.mainloop()
+     try:
+            pygame.mixer.music.stop()
+            pygame.mixer.music.unload()
+            os.remove("speech.mp3")
+            print("speech.mp3 deleted.")
+     except Exception as e:
+            print(f"Could not delete speech.mp3: {e}")
+     while True:
+            root = tk.Tk()
+            app = AACDevice(root)
+            root.mainloop()
+            break
